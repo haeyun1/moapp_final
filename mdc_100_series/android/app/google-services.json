@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "952856015173",
+    "project_id": "my-moapp-final",
+    "storage_bucket": "my-moapp-final.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952856015173:android:587f7d1e0ae495b2b8ce2c",
+        "android_client_info": {
+          "package_name": "com.example.shrine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_xWOG1ldfDDCt_bZHADpQMM57-U1u3_I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
