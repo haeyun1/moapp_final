@@ -64,24 +64,24 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(
-            Icons.menu,
-            semanticLabel: 'menu',
+            Icons.person,
+            semanticLabel: 'profile',
           ),
           onPressed: () {},
         ),
-        title: const Text('SHRINE'),
+        title: const Text('Main'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(
-              Icons.search,
-              semanticLabel: 'search',
+              Icons.shopping_cart,
+              semanticLabel: 'cart',
             ),
             onPressed: () {},
           ),
           IconButton(
             icon: const Icon(
-              Icons.tune,
-              semanticLabel: 'filter',
+              Icons.add,
+              semanticLabel: 'add_product',
             ),
             onPressed: () {},
           ),
