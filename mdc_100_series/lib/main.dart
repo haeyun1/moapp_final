@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+
 import 'firebase_options.dart';
 import 'home.dart';
 import 'login.dart';
 import 'add.dart';
+import 'app_state.dart';
+import 'profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ShrineApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AppState(),
+      builder: ((context, child) => const ShrineApp()),
+    ),
+  );
 }
 
 class ShrineApp extends StatelessWidget {
@@ -23,6 +33,7 @@ class ShrineApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (BuildContext context) => const LoginPage(),
+        '/profile': (BuildContext context) => const Profile(),
         '/addproduct': (BuildContext context) => const AddPage(),
         '/': (BuildContext context) => const HomePage(),
       },

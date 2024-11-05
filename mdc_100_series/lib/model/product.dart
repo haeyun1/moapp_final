@@ -11,9 +11,9 @@ class Product {
   final int price; // 제품 가격
   final String description;
 
-  String get assetName => '$id-0.jpg';
-  String get assetPackage => 'shrine_images';
+  //String get assetName => '$id-0.jpg';
+  //String get assetPackage => 'shrine_images';
 
-  @override
-  String toString() => "$name (id=$id)";
+  //@override
+  //String toString() => "$name (id=$id)";
 }

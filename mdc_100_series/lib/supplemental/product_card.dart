@@ -20,20 +20,20 @@ class ProductCard extends StatelessWidget {
         decimalDigits: 0, locale: Localizations.localeOf(context).toString());
     final ThemeData theme = Theme.of(context);
 
-    final imageWidget = Image.asset(
+    /*final imageWidget = Image.asset(
       product.assetName,
       package: product.assetPackage,
       fit: BoxFit.cover,
-    );
+    );*/
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        AspectRatio(
+        /*AspectRatio(
           aspectRatio: imageAspectRatio,
           child: imageWidget,
-        ),
+        ),*/
         SizedBox(
           height: kTextBoxHeight * MediaQuery.of(context).textScaleFactor,
           width: 121.0,
