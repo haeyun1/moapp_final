@@ -68,7 +68,10 @@ class _ProfileState extends State<Profile> {
               semanticLabel: 'logout',
             ),
             onPressed: () async {
-              // 로그아웃 기능 (구현되지 않음)
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/login', (route) => false);
+              await FirebaseAuth.instance.signOut();
+              print("${_user?.uid} logout.");
             },
           ),
         ],

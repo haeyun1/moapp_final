@@ -54,13 +54,14 @@ class _LoginPageState extends State<LoginPage> {
                         print("Google 계정으로 로그인 완료");
                         addUserToFireStore();
                         print("Firebase에 User 정보 추가 완료");
-                        Navigator.pop(context);
                       } else {
                         print('Google 로그인 취소됨');
                       }
                     } catch (e) {
                       print('Google 로그인 중 오류 발생: $e');
                     }
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/', (route) => false);
                   },
                 ),
               ],
@@ -74,6 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                     try {
                       final userCredential =
                           await FirebaseAuth.instance.signInAnonymously();
+
                       print(
                           "Signed in with temporary account. UID: ${userCredential.user?.uid}");
                       addUserToFireStore();
@@ -88,7 +90,8 @@ class _LoginPageState extends State<LoginPage> {
                           print("Unknown error.");
                       }
                     }
-                    Navigator.pop(context);
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/', (route) => false);
                   },
                 ),
               ],

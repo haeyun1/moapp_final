@@ -18,12 +18,13 @@ class AppState extends ChangeNotifier {
   bool get loggedIn => _loggedIn;
   StreamSubscription<QuerySnapshot>? _productsSubscription;
   List<Product> _products = []; // 제품 리스트
-  List<Product> get products => _products; // 제품 리스트 접근자
+  List<Product> get products => _products;
 
   // Firebase 초기화 및 Firebase 인증, Firestore 구독 설정
   Future<void> init() async {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
+
     FirebaseAuth.instance.userChanges().listen((user) {
       if (user != null) {
         _loggedIn = true;
@@ -44,6 +45,7 @@ class AppState extends ChangeNotifier {
       } else {
         _loggedIn = false;
         _products = [];
+        user = null;
         _productsSubscription?.cancel();
       }
       notifyListeners();

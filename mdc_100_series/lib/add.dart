@@ -32,8 +32,7 @@ class _AddPageState extends State<AddPage> {
               onPressed: () async {
                 await addProducts(_nameController.text, _priceController.text,
                     _descriptionController.text);
-
-                Navigator.pop(context); // 수정 필요
+                Navigator.pushNamed(context, '/');
               }),
         ],
       ),
