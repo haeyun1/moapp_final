@@ -27,25 +27,10 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
             const SizedBox(height: 120.0),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                filled: true,
-                labelText: 'Password',
-              ),
-              obscureText: true,
-            ),
             const SizedBox(height: 12.0),
             OverflowBar(
-              alignment: MainAxisAlignment.end,
+              alignment: MainAxisAlignment.center,
               children: <Widget>[
-                TextButton(
-                  child: const Text('CANCEL'),
-                  onPressed: () {
-                    _usernameController.clear();
-                    _passwordController.clear();
-                  },
-                ),
                 ElevatedButton(
                   child: const Text('NEXT'),
                   onPressed: () {
