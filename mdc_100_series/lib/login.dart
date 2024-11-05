@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'app_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -50,6 +52,9 @@ class _LoginPageState extends State<LoginPage> {
                         );
                         await FirebaseAuth.instance
                             .signInWithCredential(credential);
+                        print("Google 계정으로 로그인 완료");
+                        addUserToFireStore();
+                        print("Firebase에 User 정보 추가 완료");
                         Navigator.pop(context);
                       } else {
                         print('Google 로그인 취소됨');
@@ -72,6 +77,8 @@ class _LoginPageState extends State<LoginPage> {
                           await FirebaseAuth.instance.signInAnonymously();
                       print(
                           "Signed in with temporary account. UID: ${userCredential.user?.uid}");
+                      addUserToFireStore();
+                      print("Firebase에 User 정보 추가 완료");
                     } on FirebaseAuthException catch (e) {
                       switch (e.code) {
                         case "operation-not-allowed":
@@ -91,5 +98,22 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+}
+
+Future<DocumentReference> addUserToFireStore() async {
+  if (!FirebaseAuth.instance.currentUser!.isAnonymous) {
+    return FirebaseFirestore.instance.collection('user').add(<String, dynamic>{
+      'uid': FirebaseAuth.instance.currentUser!.uid,
+      'name': FirebaseAuth.instance.currentUser!.displayName,
+      'status_message': "I promise to take the test honestly before GOD.",
+      'email': FirebaseAuth.instance.currentUser!.email,
+    });
+  } else {
+    //익명으로 로그인되었을 때
+    return FirebaseFirestore.instance.collection('user').add(<String, dynamic>{
+      'uid': FirebaseAuth.instance.currentUser!.uid,
+      'status_message': "I promise to take the test honestly before GOD.",
+    });
   }
 }
