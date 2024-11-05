@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -32,8 +35,53 @@ class _LoginPageState extends State<LoginPage> {
               alignment: MainAxisAlignment.center,
               children: <Widget>[
                 ElevatedButton(
-                  child: const Text('NEXT'),
-                  onPressed: () {
+                  child: const Text('Google'),
+                  onPressed: () async {
+                    try {
+                      final GoogleSignInAccount? googleUser =
+                          await GoogleSignIn().signIn();
+                      if (googleUser != null) {
+                        final GoogleSignInAuthentication googleAuth =
+                            await googleUser.authentication;
+                        final AuthCredential credential =
+                            GoogleAuthProvider.credential(
+                          accessToken: googleAuth.accessToken,
+                          idToken: googleAuth.idToken,
+                        );
+                        await FirebaseAuth.instance
+                            .signInWithCredential(credential);
+                        Navigator.pop(context);
+                      } else {
+                        print('Google 로그인 취소됨');
+                      }
+                    } catch (e) {
+                      print('Google 로그인 중 오류 발생: $e');
+                    }
+                  },
+                ),
+              ],
+            ),
+            OverflowBar(
+              alignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  child: const Text('Guest'),
+                  onPressed: () async {
+                    try {
+                      final userCredential =
+                          await FirebaseAuth.instance.signInAnonymously();
+                      print(
+                          "Signed in with temporary account. UID: ${userCredential.user?.uid}");
+                    } on FirebaseAuthException catch (e) {
+                      switch (e.code) {
+                        case "operation-not-allowed":
+                          print(
+                              "Anonymous auth hasn't been enabled for this project.");
+                          break;
+                        default:
+                          print("Unknown error.");
+                      }
+                    }
                     Navigator.pop(context);
                   },
                 ),
