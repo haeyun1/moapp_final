@@ -28,14 +28,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 120.0),
             TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                filled: true,
-                labelText: 'Username',
-              ),
-            ),
-            const SizedBox(height: 12.0),
-            TextField(
               controller: _passwordController,
               decoration: const InputDecoration(
                 filled: true,
