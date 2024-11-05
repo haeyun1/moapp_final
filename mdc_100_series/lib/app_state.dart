@@ -50,3 +50,28 @@ class AppState extends ChangeNotifier {
     });
   }
 }
+
+Future<void> addUserToFireStore() async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+
+  if (currentUser != null) {
+    final docRef =
+        FirebaseFirestore.instance.collection('user').doc(currentUser.uid);
+
+    if (!currentUser.isAnonymous) {
+      // Google 계정으로 로그인한 경우
+      return docRef.set(<String, dynamic>{
+        'uid': currentUser.uid,
+        'name': currentUser.displayName,
+        'status_message': "I promise to take the test honestly before GOD.",
+        'email': currentUser.email,
+      });
+    } else {
+      // 익명으로 로그인한 경우
+      return docRef.set(<String, dynamic>{
+        'uid': currentUser.uid,
+        'status_message': "I promise to take the test honestly before GOD.",
+      });
+    }
+  }
+}

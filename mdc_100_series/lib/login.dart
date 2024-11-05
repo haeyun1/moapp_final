@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'app_state.dart';
+import 'app_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -98,46 +97,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-}
-
-/*Future<DocumentReference> addUserToFireStore() async {
-  if (!FirebaseAuth.instance.currentUser!.isAnonymous) {
-    return FirebaseFirestore.instance.collection('user').add(<String, dynamic>{
-      'uid': FirebaseAuth.instance.currentUser!.uid,
-      'name': FirebaseAuth.instance.currentUser!.displayName,
-      'status_message': "I promise to take the test honestly before GOD.",
-      'email': FirebaseAuth.instance.currentUser!.email,
-    });
-  } else {
-    //익명으로 로그인되었을 때
-    return FirebaseFirestore.instance.collection('user').add(<String, dynamic>{
-      'uid': FirebaseAuth.instance.currentUser!.uid,
-      'status_message': "I promise to take the test honestly before GOD.",
-    });
-  }
-}*/
-Future<void> addUserToFireStore() async {
-  final currentUser = FirebaseAuth.instance.currentUser;
-
-  if (currentUser != null) {
-    final docRef =
-        FirebaseFirestore.instance.collection('user').doc(currentUser.uid);
-
-    if (!currentUser.isAnonymous) {
-      // Google 계정으로 로그인한 경우
-      return docRef.set(<String, dynamic>{
-        'uid': currentUser.uid,
-        'name': currentUser.displayName,
-        'status_message': "I promise to take the test honestly before GOD.",
-        'email': currentUser.email,
-      });
-    } else {
-      // 익명으로 로그인한 경우
-      return docRef.set(<String, dynamic>{
-        'uid': currentUser.uid,
-        'status_message': "I promise to take the test honestly before GOD.",
-      });
-    }
   }
 }
