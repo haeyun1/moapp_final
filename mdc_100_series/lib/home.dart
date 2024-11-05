@@ -83,7 +83,9 @@ class HomePage extends StatelessWidget {
               Icons.add,
               semanticLabel: 'add_product',
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, '/addproduct');
+            },
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'home.dart';
 import 'login.dart';
+import 'add.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class ShrineApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (BuildContext context) => const LoginPage(),
+        '/addproduct': (BuildContext context) => const AddPage(),
         '/': (BuildContext context) => const HomePage(),
       },
       theme: ThemeData.light(useMaterial3: true),

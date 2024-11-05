@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 import 'model/product.dart';
-// import 'model/users.dart';
 
 class AppState extends ChangeNotifier {
   AppState() {
