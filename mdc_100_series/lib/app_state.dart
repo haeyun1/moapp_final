@@ -27,21 +27,20 @@ class AppState extends ChangeNotifier {
     FirebaseAuth.instance.userChanges().listen((user) {
       if (user != null) {
         _loggedIn = true;
-        // Todo : 사용자 컬렉션 구독 설정
-        /*_usersSubscription = FirebaseFirestore.instance
-            .collection('user')
+        _productsSubscription = FirebaseFirestore.instance
+            .collection('product')
             .snapshots()
             .listen((snapshot) {
-          _users = [];
+          _products = [];
           for (final document in snapshot.docs) {
-            _users.add(Users(
-                email: document.data()['email'] as String,
-                name: user.displayName ?? '',
-                uid: FirebaseAuth.instance.currentUser!.uid,
-                status_message: document.data()['status_message'] as String));
+            _products.add(Product(
+                id: document.id,
+                name: document.data()['name'] as String,
+                price: document.data()['price'] as int,
+                description: document.data()['description'] as String));
           }
-        });*/
-        // Todo : 제품 컬렉션 구독 설정
+          notifyListeners();
+        });
       } else {
         _loggedIn = false;
         _products = [];
