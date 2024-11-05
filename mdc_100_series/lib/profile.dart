@@ -45,8 +45,10 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     final isAnonymous = _user?.isAnonymous ?? true;
     final email = isAnonymous ? "Anonymous" : _user?.email;
-    final displayName =
-        isAnonymous ? "Guest" : _user?.displayName ?? "Unknown User";
+    final displayName = isAnonymous ? "" : _user?.displayName ?? "Unknown User";
+    final photoUrl = isAnonymous
+        ? 'https://handong.edu/site/handong/res/img/logo.png' // 익명 계정일 때 기본 이미지 URL
+        : _user?.photoURL;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,33 +68,45 @@ class _ProfileState extends State<Profile> {
               semanticLabel: 'logout',
             ),
             onPressed: () async {
-              // await FirebaseAuth.instance.signOut();
+              // 로그아웃 기능 (구현되지 않음)
             },
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(40.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+                child: Container(
+              height: 250,
+              width: 250,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(photoUrl!), // 이미지 URL
+                  fit: BoxFit.contain, // 이미지를 꽉 채우기
+                ),
+              ),
+            )),
+            const SizedBox(height: 16),
             Text(
-              'UID: ${_user?.uid ?? "Unknown UID"}',
+              '<${_user?.uid ?? "Unknown UID"}>',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$email',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Email: $email',
+              displayName,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Name: $displayName',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Status Message: $_statusMessage',
+              _statusMessage,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
