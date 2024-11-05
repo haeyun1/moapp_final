@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 import 'model/product.dart';
-import 'model/users.dart';
+// import 'model/users.dart';
 
 class AppState extends ChangeNotifier {
   AppState() {
@@ -20,9 +20,6 @@ class AppState extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _productsSubscription;
   List<Product> _products = []; // 제품 리스트
   List<Product> get products => _products; // 제품 리스트 접근자
-  StreamSubscription<QuerySnapshot>? _usersSubscription;
-  List<Users> _users = [];
-  List<Users> get users => _users;
 
   // Firebase 초기화 및 Firebase 인증, Firestore 구독 설정
   Future<void> init() async {
