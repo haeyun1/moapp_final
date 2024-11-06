@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:async';
+import 'app_state.dart';
 
 class AddPage extends StatefulWidget {
   const AddPage({Key? key}) : super(key: key);
@@ -59,14 +57,4 @@ class _AddPageState extends State<AddPage> {
       ),
     );
   }
-}
-
-Future<DocumentReference> addProducts(
-    String name, String price, String description) {
-  return FirebaseFirestore.instance.collection('product').add(<String, dynamic>{
-    'name': name,
-    'price': int.parse(price),
-    'description': description,
-    'creatorUid': FirebaseAuth.instance.currentUser!.uid,
-  });
 }

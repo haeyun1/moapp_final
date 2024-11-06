@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'model/product.dart';
+import 'detail.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -51,6 +52,23 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       formatter.format(product.price),
                       style: theme.textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8.0),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () async {
+                          // 상세 페이지로 이동
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailPage(product: product),
+                            ),
+                          );
+                        },
+                        child: const Text('More'),
+                      ),
                     ),
                   ],
                 ),
@@ -118,7 +136,7 @@ class _HomePageState extends State<HomePage> {
               childAspectRatio: 8.0 / 9.0,
               children: _buildGridCards(context, products),
             ),
-          )
+          ),
         ],
       ),
     );

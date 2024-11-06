@@ -40,6 +40,9 @@ class AppState extends ChangeNotifier {
               price: document.data()['price'] as int,
               description: document.data()['description'] as String,
               creatorUid: document.data()['creatorUid'] as String,
+              creationTime: document.data()['creationTime'] as Timestamp,
+              recentUpdateTime:
+                  document.data()['recentUpdateTime'] as Timestamp,
             ));
           }
           notifyListeners();
@@ -78,4 +81,16 @@ Future<void> addUserToFireStore() async {
       });
     }
   }
+}
+
+Future<DocumentReference> addProducts(
+    String name, String price, String description) async {
+  return FirebaseFirestore.instance.collection('product').add(<String, dynamic>{
+    'name': name,
+    'price': int.parse(price),
+    'description': description,
+    'creatorUid': FirebaseAuth.instance.currentUser!.uid,
+    'creationTime': FieldValue.serverTimestamp(),
+    'recentUpdateTime': FieldValue.serverTimestamp(),
+  });
 }

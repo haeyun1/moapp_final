@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Product {
   const Product({
     required this.id,
@@ -5,6 +7,8 @@ class Product {
     required this.price,
     required this.description,
     required this.creatorUid,
+    required this.creationTime,
+    required this.recentUpdateTime,
   });
 
   final String id;
@@ -12,6 +16,8 @@ class Product {
   final int price; // 제품 가격
   final String description;
   final String creatorUid;
+  final Timestamp creationTime;
+  final Timestamp recentUpdateTime;
 
   //String get assetName => '$id-0.jpg';
   //String get assetPackage => 'shrine_images';
