@@ -35,10 +35,12 @@ class AppState extends ChangeNotifier {
           _products = [];
           for (final document in snapshot.docs) {
             _products.add(Product(
-                id: document.id,
-                name: document.data()['name'] as String,
-                price: document.data()['price'] as int,
-                description: document.data()['description'] as String));
+              id: document.id,
+              name: document.data()['name'] as String,
+              price: document.data()['price'] as int,
+              description: document.data()['description'] as String,
+              creatorUid: document.data()['creatorUid'] as String,
+            ));
           }
           notifyListeners();
         });
