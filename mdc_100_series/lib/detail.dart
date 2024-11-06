@@ -21,11 +21,13 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
   bool hasLiked = false;
+  bool isIncart = false;
 
   @override
   void initState() {
     super.initState();
     _checkIfLiked();
+    _checkIfIncart();
   }
 
   Future<void> _checkIfLiked() async {
@@ -44,6 +46,22 @@ class _DetailPageState extends State<DetailPage> {
     });
   }
 
+  Future<void> _checkIfIncart() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final cartDoc = await FirebaseFirestore.instance
+        .collection('user')
+        .doc(user.uid)
+        .collection('cart')
+        .doc(widget.product.id)
+        .get();
+
+    setState(() {
+      isIncart = cartDoc.exists;
+    });
+  }
+
   Future<void> _toggleLike(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -58,11 +76,13 @@ class _DetailPageState extends State<DetailPage> {
             .collection('product')
             .doc(widget.product.id);
 
+        final likeDoc = productDoc.collection('likes').doc(user.uid);
+        transaction.set(likeDoc, {
+          'liked': true,
+        });
         transaction.update(productDoc, {
           'likes': FieldValue.increment(1),
         });
-        final likeDoc = productDoc.collection('likes').doc(user.uid);
-        transaction.set(likeDoc, {'liked': true});
       });
 
       setState(() {
@@ -75,6 +95,41 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  Future<void> _togglecart(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    if (isIncart) {
+      await FirebaseFirestore.instance
+          .collection('user')
+          .doc(user.uid)
+          .collection('cart')
+          .doc(widget.product.id)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Removed from cart!")),
+      );
+    } else {
+      await FirebaseFirestore.instance
+          .collection('user')
+          .doc(user.uid)
+          .collection('cart')
+          .doc(widget.product.id)
+          .set({
+        'productId': widget.product.id,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Added to cart!")),
+      );
+    }
+
+    setState(() {
+      isIncart = !isIncart;
+    });
+  }
+
   Future<void> _deleteProduct(BuildContext context) async {
     await FirebaseFirestore.instance
         .collection('product')
@@ -85,178 +140,123 @@ class _DetailPageState extends State<DetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(builder: (context, appstate, child) {
-      widget._product = appstate.products.firstWhere(
-        (p) => p.id == widget.product.id,
-        orElse: () => Product(
-          id: '1234',
-          name: '',
-          price: 0,
-          description: '',
-          creatorUid: '',
-          creationTime: Timestamp.now(),
-          recentUpdateTime: Timestamp.now(),
-          imageUrl: '',
-          likes: 0,
-        ),
-      );
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Detail'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+    return Consumer<AppState>(
+      builder: (context, appstate, child) {
+        widget._product = appstate.products.firstWhere(
+          (p) => p.id == widget.product.id,
+          orElse: () => Product(
+            id: '1234',
+            name: '',
+            price: 0,
+            description: '',
+            creatorUid: '',
+            creationTime: Timestamp.now(),
+            recentUpdateTime: Timestamp.now(),
+            imageUrl: '',
+            likes: 0,
           ),
-          actions: [
-            if (FirebaseAuth.instance.currentUser?.uid ==
-                widget._product!.creatorUid)
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditPage(product: widget._product!),
-                        ),
-                      );
-                      if (result == true) {
-                        setState(() {});
-                      }
-                    },
-                  ),
-                  IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await _deleteProduct(context);
-                      }),
-                ],
-              ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: const Icon(Icons.shopping_cart), // 버튼에 사용할 아이콘
-        ),
-        body: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('product')
-              .doc(widget._product!.id)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || !snapshot.data!.exists) {
-              return const Center(child: Text('Product not found.'));
-            }
-            final productData = snapshot.data!;
-            final updatedProduct = Product(
-              id: productData.id,
-              name: productData['name'],
-              price: productData['price'],
-              description: productData['description'],
-              imageUrl: productData['imageUrl'],
-              creatorUid: productData['creatorUid'],
-              creationTime: productData['creationTime'],
-              recentUpdateTime: productData['recentUpdateTime'],
-            );
+        );
 
-            // creationTime과 recentUpdateTime이 null인지 확인하고 변환
-            final creationTime = updatedProduct.creationTime != null
-                ? (updatedProduct.creationTime as Timestamp).toDate()
-                : null;
-            final recentUpdateTime = updatedProduct.recentUpdateTime != null
-                ? (updatedProduct.recentUpdateTime as Timestamp).toDate()
-                : null;
+        bool isIncart = this.isIncart;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  AspectRatio(
-                    aspectRatio: 18 / 11,
-                    child: Image.network(
-                      widget._product!.imageUrl ??
-                          'https://handong.edu/site/handong/res/img/logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget._product!.name,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 4.0),
-                          Text(
-                            '\$${widget._product!.price}',
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ],
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Detail'),
+            actions: [
+              if (FirebaseAuth.instance.currentUser?.uid ==
+                  widget.product.creatorUid) ...[
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditPage(product: widget.product),
                       ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.thumb_up,
-                              color: hasLiked ? Colors.red : Colors.grey,
-                            ),
-                            onPressed: () => _toggleLike(context),
-                          ),
-                          Text('${widget._product!.likes}'),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8.0),
-                  const Divider(),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    widget._product!.description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 8.0),
-                  const Divider(),
-                  const SizedBox(height: 8.0),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Column(
+                    );
+                    if (result == true) {
+                      setState(() {});
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () async {
+                    await _deleteProduct(context);
+                  },
+                ),
+              ],
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                AspectRatio(
+                  aspectRatio: 18 / 11,
+                  child: widget.product.imageUrl != null &&
+                          widget.product.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          widget.product.imageUrl!,
+                          fit: BoxFit.contain,
+                        )
+                      : Container(), // 이미지가 없을 경우 빈 컨테이너 표시
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Creator: ${widget._product!.creatorUid}',
-                          style: Theme.of(context).textTheme.labelSmall,
+                          widget._product!.name,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 4.0),
                         Text(
-                          'Created: ${(widget._product!.creationTime).toDate()}',
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                        Text(
-                          'Modified: ${(widget._product!.recentUpdateTime).toDate()}',
-                          style: Theme.of(context).textTheme.labelSmall,
+                          '\$${widget._product!.price}',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      );
-    });
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.thumb_up,
+                            color: hasLiked ? Colors.red : Colors.grey,
+                          ),
+                          onPressed: () => _toggleLike(context),
+                        ),
+                        Text('${widget._product!.likes}'),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8.0),
+                const Divider(),
+                const SizedBox(height: 8.0),
+                Text(
+                  widget._product!.description,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8.0),
+                const Divider(),
+                const SizedBox(height: 8.0),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _togglecart(context),
+            child: Icon(
+              isIncart ? Icons.check : Icons.shopping_cart,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
