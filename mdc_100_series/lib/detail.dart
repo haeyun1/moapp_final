@@ -61,6 +61,8 @@ class _DetailPageState extends State<DetailPage> {
         transaction.update(productDoc, {
           'likes': FieldValue.increment(1),
         });
+        final likeDoc = productDoc.collection('likes').doc(user.uid);
+        transaction.set(likeDoc, {'liked': true});
       });
 
       setState(() {
@@ -135,6 +137,10 @@ class _DetailPageState extends State<DetailPage> {
                 ],
               ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          child: const Icon(Icons.shopping_cart), // 버튼에 사용할 아이콘
         ),
         body: StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
