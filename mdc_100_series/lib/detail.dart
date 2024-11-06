@@ -101,48 +101,39 @@ class _DetailPageState extends State<DetailPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Detail'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditPage(product: widget._product!),
+            if (FirebaseAuth.instance.currentUser?.uid ==
+                widget._product!.creatorUid)
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditPage(product: widget._product!),
+                        ),
+                      );
+                      if (result == true) {
+                        setState(() {});
+                      }
+                    },
                   ),
-                );
-                if (result == true) {
-                  // EditPage에서 true 반환 시에만 새로고침 없이 StreamBuilder가 업데이트를 반영함 데이터 다시 가져오기
-                  setState(() {});
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                final confirmDelete = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Delete Product"),
-                    content: const Text(
-                        "Are you sure you want to delete this product?"),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text("Cancel"),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text("Delete"),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmDelete == true) {
-                  await _deleteProduct(context);
-                }
-              },
-            ),
+                  IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        await _deleteProduct(context);
+                      }),
+                ],
+              ),
           ],
         ),
         body: StreamBuilder<DocumentSnapshot>(
@@ -341,7 +332,6 @@ class _EditPageState extends State<EditPage> {
               onPressed: () async {
                 try {
                   await _updateProduct();
-                  setState(() {});
                   Navigator.of(context).pop(true);
                 } catch (e) {
                   print(e);
