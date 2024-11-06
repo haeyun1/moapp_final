@@ -34,43 +34,62 @@ class _HomePageState extends State<HomePage> {
     return sortedProducts.map((product) {
       return Card(
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      product.name,
-                      style: theme.textTheme.titleLarge,
-                      maxLines: 1,
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      formatter.format(product.price),
-                      style: theme.textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8.0),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () async {
-                          // 상세 페이지로 이동
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DetailPage(product: product),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // 이미지 표시
+                AspectRatio(
+                  aspectRatio: 18 / 11,
+                  child:
+                      product.imageUrl != null && product.imageUrl!.isNotEmpty
+                          ? Image.network(
+                              product.imageUrl!,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.network(
+                              'https://handong.edu/site/handong/res/img/logo.png',
+                              fit: BoxFit.cover,
                             ),
-                          );
-                        },
-                        child: const Text('More'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: theme.textTheme.titleLarge,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 4.0),
+                      Text(
+                        formatter.format(product.price),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              right: 8.0,
+              bottom: 8.0,
+              child: TextButton(
+                onPressed: () async {
+                  // 상세 페이지로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPage(product: product),
                     ),
-                  ],
+                  );
+                },
+                child: const Text(
+                  'more',
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
             ),

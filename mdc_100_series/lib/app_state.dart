@@ -43,6 +43,7 @@ class AppState extends ChangeNotifier {
               creationTime: document.data()['creationTime'] as Timestamp,
               recentUpdateTime:
                   document.data()['recentUpdateTime'] as Timestamp,
+              imageUrl: document.data()['imageUrl'] as String,
             ));
           }
           notifyListeners();
@@ -84,7 +85,7 @@ Future<void> addUserToFireStore() async {
 }
 
 Future<DocumentReference> addProducts(
-    String name, String price, String description) async {
+    String name, String price, String description, String imageUrl) async {
   return FirebaseFirestore.instance.collection('product').add(<String, dynamic>{
     'name': name,
     'price': int.parse(price),
@@ -92,5 +93,6 @@ Future<DocumentReference> addProducts(
     'creatorUid': FirebaseAuth.instance.currentUser!.uid,
     'creationTime': FieldValue.serverTimestamp(),
     'recentUpdateTime': FieldValue.serverTimestamp(),
+    'imageUrl': imageUrl,
   });
 }

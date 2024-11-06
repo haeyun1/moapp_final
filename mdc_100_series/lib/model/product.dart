@@ -9,6 +9,7 @@ class Product {
     required this.creatorUid,
     required this.creationTime,
     required this.recentUpdateTime,
+    required this.imageUrl,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class Product {
   final String creatorUid;
   final Timestamp creationTime;
   final Timestamp recentUpdateTime;
+  final String imageUrl;
 
   //String get assetName => '$id-0.jpg';
   //String get assetPackage => 'shrine_images';
