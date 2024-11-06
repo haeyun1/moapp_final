@@ -109,6 +109,10 @@ class _ProfileState extends State<Profile> {
             ),
             const SizedBox(height: 8),
             Text(
+              'Haeyun Jeong',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            Text(
               _statusMessage,
               style: Theme.of(context).textTheme.bodyLarge,
             ),

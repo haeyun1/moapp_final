@@ -10,6 +10,7 @@ class Product {
     required this.creationTime,
     required this.recentUpdateTime,
     required this.imageUrl,
+    this.likes = 0, // 좋아요 수 추가, 기본값은 0
   });
 
   final String id;
@@ -20,10 +21,5 @@ class Product {
   final Timestamp creationTime;
   final Timestamp recentUpdateTime;
   final String imageUrl;
-
-  //String get assetName => '$id-0.jpg';
-  //String get assetPackage => 'shrine_images';
-
-  //@override
-  //String toString() => "$name (id=$id)";
+  final int likes; // 좋아요 수 필드
 }

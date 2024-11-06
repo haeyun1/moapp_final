@@ -14,6 +14,7 @@ class AppState extends ChangeNotifier {
   AppState() {
     init();
   }
+
   bool _loggedIn = false;
   bool get loggedIn => _loggedIn;
   StreamSubscription<QuerySnapshot>? _productsSubscription;
@@ -40,10 +41,12 @@ class AppState extends ChangeNotifier {
               price: document.data()['price'] as int,
               description: document.data()['description'] as String,
               creatorUid: document.data()['creatorUid'] as String,
-              creationTime: document.data()['creationTime'] as Timestamp,
               recentUpdateTime:
                   document.data()['recentUpdateTime'] as Timestamp,
+              creationTime: document.data()['creationTime'] as Timestamp,
+
               imageUrl: document.data()['imageUrl'] as String,
+              likes: (document.data()['likes'] ?? 0) as int, // 좋아요 수 추가
             ));
           }
           notifyListeners();
@@ -59,6 +62,7 @@ class AppState extends ChangeNotifier {
   }
 }
 
+// Firestore에서 유저 정보 추가
 Future<void> addUserToFireStore() async {
   final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -84,6 +88,7 @@ Future<void> addUserToFireStore() async {
   }
 }
 
+// Firestore에 제품 추가
 Future<DocumentReference> addProducts(
     String name, String price, String description, String imageUrl) async {
   return FirebaseFirestore.instance.collection('product').add(<String, dynamic>{
@@ -91,8 +96,10 @@ Future<DocumentReference> addProducts(
     'price': int.parse(price),
     'description': description,
     'creatorUid': FirebaseAuth.instance.currentUser!.uid,
-    'creationTime': FieldValue.serverTimestamp(),
     'recentUpdateTime': FieldValue.serverTimestamp(),
+    'creationTime': FieldValue.serverTimestamp(),
+
     'imageUrl': imageUrl,
+    'likes': 0, // 기본값 0으로 좋아요 수 초기화
   });
 }
