@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shrine/cart.dart';
 import 'app_state.dart';
 import 'model/product.dart';
+import 'package:firebase_auth/firebase_auth.dart' // 이메일 및 전화 인증 제외
+    ;
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'detail.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,6 +36,20 @@ class _HomePageState extends State<HomePage> {
     sortedProducts.sort((a, b) => _sortOrder == 'ASC'
         ? a.price.compareTo(b.price)
         : b.price.compareTo(a.price));
+
+    Future<bool> isInCart(String productId) async {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final cartRef = FirebaseFirestore.instance
+            .collection('user')
+            .doc(currentUser.uid)
+            .collection('cart')
+            .doc(productId);
+        final snapshot = await cartRef.get();
+        return snapshot.exists;
+      }
+      return false;
+    }
 
     return sortedProducts.map((product) {
       return Card(
@@ -74,6 +94,36 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            // 체크 아이콘 추가
+            /*if (isInCart('${product.id}') == true)
+              Positioned(
+                top: 8.0,
+                right: 8.0,
+                child: Icon(
+                  Icons.check_circle,
+                  color: Colors.blue,
+                ),
+              ),*/
+            FutureBuilder(
+              future: isInCart(product.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container();
+                }
+                if (snapshot.hasData && snapshot.data == true) {
+                  return Positioned(
+                    top: 8.0,
+                    right: 8.0,
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.blue,
+                    ),
+                  );
+                }
+                return Container();
+              },
+            ),
+
             Positioned(
               right: 8.0,
               bottom: 8.0,
@@ -85,7 +135,9 @@ class _HomePageState extends State<HomePage> {
                     MaterialPageRoute(
                       builder: (context) => DetailPage(product: product),
                     ),
-                  );
+                  ).then((_) {
+                    setState(() {}); // Detail 페이지에서 돌아온 후 상태 업데이트
+                  });
                 },
                 child: const Text(
                   'more',
@@ -104,6 +156,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _sortOrder = sortOrder;
     });
+  }
+
+  Future<bool> _checkIfInCart(Product product) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final cartDoc = await FirebaseFirestore.instance
+        .collection('user')
+        .doc(user.uid)
+        .collection('cart')
+        .doc(product.id)
+        .get();
+
+    return cartDoc.exists;
   }
 
   @override
@@ -129,7 +195,16 @@ class _HomePageState extends State<HomePage> {
               Icons.shopping_cart,
               semanticLabel: 'cart',
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CartPage(),
+                ),
+              ).then((_) {
+                setState(() {}); // Detail 페이지에서 돌아온 후 상태 업데이트
+              });
+            },
           ),
           IconButton(
             icon: const Icon(
