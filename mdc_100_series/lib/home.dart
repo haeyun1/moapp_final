@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shrine/cart.dart';
 import 'app_state.dart';
 import 'model/product.dart';
 import 'package:firebase_auth/firebase_auth.dart' // 이메일 및 전화 인증 제외
@@ -194,7 +195,16 @@ class _HomePageState extends State<HomePage> {
               Icons.shopping_cart,
               semanticLabel: 'cart',
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CartPage(),
+                ),
+              ).then((_) {
+                setState(() {}); // Detail 페이지에서 돌아온 후 상태 업데이트
+              });
+            },
           ),
           IconButton(
             icon: const Icon(
