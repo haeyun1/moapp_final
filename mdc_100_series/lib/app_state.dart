@@ -20,6 +20,69 @@ class AppState extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _productsSubscription;
   List<Product> _products = []; // 제품 리스트
   List<Product> get products => _products;
+  List<Product> _wishlist = [];
+
+  List<Product> get wishlist => _wishlist;
+
+  void addToWishlist(Product product) {
+    _wishlist.add(product);
+    notifyListeners();
+  }
+
+  void removeFromWishlist(Product product) {
+    _wishlist.remove(product.id);
+    notifyListeners();
+  }
+
+  bool isInWishlist(Product product) {
+    return _wishlist.contains(product);
+  }
+
+  Future<void> addToCart(Product product) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final cartRef = FirebaseFirestore.instance
+          .collection('user')
+          .doc(currentUser.uid)
+          .collection('cart')
+          .doc(product.id);
+      await cartRef.set({
+        'name': product.name,
+        'price': product.price,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeFromCart(Product product) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final cartRef = FirebaseFirestore.instance
+          .collection('user')
+          .doc(currentUser.uid)
+          .collection('cart')
+          .doc(product.id);
+      await cartRef.delete();
+      notifyListeners();
+    }
+  }
+
+  Future<bool> isInCart(Product product) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final cartRef = FirebaseFirestore.instance
+          .collection('user')
+          .doc(currentUser.uid)
+          .collection('cart')
+          .doc(product.id);
+      final snapshot = await cartRef.get();
+      return snapshot.exists;
+    }
+    return false;
+  }
 
   // Firebase 초기화 및 Firebase 인증, Firestore 구독 설정
   Future<void> init() async {
