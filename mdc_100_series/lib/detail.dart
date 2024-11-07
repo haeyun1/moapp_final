@@ -245,6 +245,18 @@ class _DetailPageState extends State<DetailPage> {
                 const SizedBox(height: 8.0),
                 const Divider(),
                 const SizedBox(height: 8.0),
+                Text(
+                  'creator: <${widget._product!.creatorUid}>',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                Text(
+                  '${(widget._product!.creationTime).toDate()} Created',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                Text(
+                  '${(widget._product!.recentUpdateTime).toDate()} Modified',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
               ],
             ),
           ),
