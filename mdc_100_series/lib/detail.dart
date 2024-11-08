@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
+
 import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'model/product.dart';
@@ -47,18 +48,10 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   Future<void> _checkIfIncart() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final cartDoc = await FirebaseFirestore.instance
-        .collection('user')
-        .doc(user.uid)
-        .collection('cart')
-        .doc(widget.product.id)
-        .get();
-
+    final appState = Provider.of<AppState>(context, listen: false);
+    final isInCart = await appState.isInCart(widget.product);
     setState(() {
-      isIncart = cartDoc.exists;
+      isIncart = isInCart;
     });
   }
 
@@ -68,57 +61,30 @@ class _DetailPageState extends State<DetailPage> {
 
     if (hasLiked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You can only do it once !!")),
+        const SnackBar(content: Text("You can only like it once!")),
       );
     } else {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        final productDoc = FirebaseFirestore.instance
-            .collection('product')
-            .doc(widget.product.id);
-
-        final likeDoc = productDoc.collection('likes').doc(user.uid);
-        transaction.set(likeDoc, {
-          'liked': true,
-        });
-        transaction.update(productDoc, {
-          'likes': FieldValue.increment(1),
-        });
-      });
-
       setState(() {
         hasLiked = true;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("I LIKE IT !")),
+        const SnackBar(content: Text("Liked!")),
       );
     }
   }
 
   Future<void> _togglecart(BuildContext context) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final appState = context.read<AppState>();
 
     if (isIncart) {
-      await FirebaseFirestore.instance
-          .collection('user')
-          .doc(user.uid)
-          .collection('cart')
-          .doc(widget.product.id)
-          .delete();
+      await appState.removeFromCart(widget.product);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Removed from cart!")),
       );
     } else {
-      await FirebaseFirestore.instance
-          .collection('user')
-          .doc(user.uid)
-          .collection('cart')
-          .doc(widget.product.id)
-          .set({
-        'productId': widget.product.id,
-      });
+      await appState.addToCart(widget.product);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Added to cart!")),
@@ -307,7 +273,7 @@ class _EditPageState extends State<EditPage> {
   }
 
   Future<String> _uploadImage(File imageFile) async {
-    final fileName = basename(imageFile.path);
+    final fileName = path.basename(imageFile.path);
     final storageRef = FirebaseStorage.instance.ref().child('images/$fileName');
     final uploadTask = storageRef.putFile(imageFile);
     final snapshot = await uploadTask;

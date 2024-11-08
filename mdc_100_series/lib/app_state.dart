@@ -17,26 +17,15 @@ class AppState extends ChangeNotifier {
 
   bool _loggedIn = false;
   bool get loggedIn => _loggedIn;
+
   StreamSubscription<QuerySnapshot>? _productsSubscription;
+  StreamSubscription<QuerySnapshot>? _cartsSubscription;
+
   List<Product> _products = []; // 제품 리스트
   List<Product> get products => _products;
-  List<Product> _wishlist = [];
 
-  List<Product> get wishlist => _wishlist;
-
-  void addToWishlist(Product product) {
-    _wishlist.add(product);
-    notifyListeners();
-  }
-
-  void removeFromWishlist(Product product) {
-    _wishlist.remove(product.id);
-    notifyListeners();
-  }
-
-  bool isInWishlist(Product product) {
-    return _wishlist.contains(product);
-  }
+  List<Product> _cart = []; // 장바구니 리스트
+  List<Product> get cart => _cart;
 
   Future<void> addToCart(Product product) async {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -51,7 +40,10 @@ class AppState extends ChangeNotifier {
         'price': product.price,
         'description': product.description,
         'imageUrl': product.imageUrl,
-        'addedAt': FieldValue.serverTimestamp(),
+        'creatorUid': product.creatorUid,
+        'recentUpdateTime': product.recentUpdateTime,
+        'creationTime': product.creationTime,
+        'likes': product.likes,
       });
       notifyListeners();
     }
@@ -66,6 +58,9 @@ class AppState extends ChangeNotifier {
           .collection('cart')
           .doc(product.id);
       await cartRef.delete();
+
+      // 로컬 상태에서도 해당 제품 제거
+      _cart.removeWhere((item) => item.id == product.id);
       notifyListeners();
     }
   }
@@ -92,36 +87,75 @@ class AppState extends ChangeNotifier {
     FirebaseAuth.instance.userChanges().listen((user) {
       if (user != null) {
         _loggedIn = true;
-        _productsSubscription = FirebaseFirestore.instance
-            .collection('product')
-            .snapshots()
-            .listen((snapshot) {
-          _products = [];
-          for (final document in snapshot.docs) {
-            _products.add(Product(
-              id: document.id,
-              name: document.data()['name'] as String,
-              price: document.data()['price'] as int,
-              description: document.data()['description'] as String,
-              creatorUid: document.data()['creatorUid'] as String,
-              recentUpdateTime:
-                  document.data()['recentUpdateTime'] as Timestamp,
-              creationTime: document.data()['creationTime'] as Timestamp,
 
-              imageUrl: document.data()['imageUrl'] as String,
-              likes: (document.data()['likes'] ?? 0) as int, // 좋아요 수 추가
-            ));
-          }
-          notifyListeners();
-        });
+        // 구독 초기화 및 데이터 가져오기
+        _initializeCartSubscription(user.uid);
+        _initializeProductsSubscription();
       } else {
         _loggedIn = false;
         _products = [];
-        user = null;
+        _cart = [];
         _productsSubscription?.cancel();
+        _cartsSubscription?.cancel();
       }
       notifyListeners();
     });
+  }
+
+  void _initializeCartSubscription(String userId) {
+    _cartsSubscription = FirebaseFirestore.instance
+        .collection('user')
+        .doc(userId)
+        .collection('cart')
+        .snapshots()
+        .listen((snapshot) {
+      // 중복 방지를 위해 매 업데이트 시 초기화
+      _cart = snapshot.docs.map((document) {
+        final data = document.data();
+        return Product(
+          id: document.id,
+          name: data['name'] as String,
+          price: data['price'] as int,
+          description: data['description'] as String,
+          creatorUid: data['creatorUid'] as String,
+          recentUpdateTime: data['recentUpdateTime'] as Timestamp,
+          creationTime: data['creationTime'] as Timestamp,
+          imageUrl: data['imageUrl'] as String,
+          likes: (data['likes'] ?? 0) as int,
+        );
+      }).toList();
+      notifyListeners();
+    });
+  }
+
+  void _initializeProductsSubscription() {
+    _productsSubscription = FirebaseFirestore.instance
+        .collection('product')
+        .snapshots()
+        .listen((snapshot) {
+      _products = snapshot.docs.map((document) {
+        final data = document.data();
+        return Product(
+          id: document.id,
+          name: data['name'] as String,
+          price: data['price'] as int,
+          description: data['description'] as String,
+          creatorUid: data['creatorUid'] as String,
+          recentUpdateTime: data['recentUpdateTime'] as Timestamp,
+          creationTime: data['creationTime'] as Timestamp,
+          imageUrl: data['imageUrl'] as String,
+          likes: (data['likes'] ?? 0) as int,
+        );
+      }).toList();
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _productsSubscription?.cancel();
+    _cartsSubscription?.cancel();
+    super.dispose();
   }
 }
 
@@ -134,7 +168,6 @@ Future<void> addUserToFireStore() async {
         FirebaseFirestore.instance.collection('user').doc(currentUser.uid);
 
     if (!currentUser.isAnonymous) {
-      // Google 계정으로 로그인한 경우
       return docRef.set(<String, dynamic>{
         'uid': currentUser.uid,
         'name': currentUser.displayName,
@@ -142,7 +175,6 @@ Future<void> addUserToFireStore() async {
         'email': currentUser.email,
       });
     } else {
-      // 익명으로 로그인한 경우
       return docRef.set(<String, dynamic>{
         'uid': currentUser.uid,
         'status_message': "I promise to take the test honestly before GOD.",

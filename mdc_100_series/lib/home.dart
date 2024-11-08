@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shrine/cart.dart';
+import 'cart.dart';
 import 'app_state.dart';
 import 'model/product.dart';
 import 'package:firebase_auth/firebase_auth.dart' // 이메일 및 전화 인증 제외

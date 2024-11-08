@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:shrine/cart.dart';
 
 import 'firebase_options.dart';
 import 'home.dart';
@@ -35,6 +36,7 @@ class ShrineApp extends StatelessWidget {
         '/login': (BuildContext context) => const LoginPage(),
         '/profile': (BuildContext context) => const Profile(),
         '/addproduct': (BuildContext context) => const AddPage(),
+        '/cart': (BuildContext context) => CartPage(),
         '/': (BuildContext context) => const HomePage(),
       },
       theme: ThemeData.light(useMaterial3: true),
