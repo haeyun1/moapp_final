@@ -58,12 +58,21 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _toggleLike(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+    final productDoc =
+        FirebaseFirestore.instance.collection('product').doc(widget.product.id);
+    final likeDoc = productDoc.collection('likes').doc(user.uid);
 
     if (hasLiked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("You can only like it once!")),
       );
     } else {
+      await likeDoc.set({
+        'likedAt': FieldValue.serverTimestamp(),
+      });
+      await productDoc.update({
+        'likes': FieldValue.increment(1),
+      });
       setState(() {
         hasLiked = true;
       });
@@ -97,10 +106,22 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   Future<void> _deleteProduct(BuildContext context) async {
-    await FirebaseFirestore.instance
-        .collection('product')
-        .doc(widget.product.id)
-        .delete();
+    final productRef =
+        FirebaseFirestore.instance.collection('product').doc(widget.product.id);
+
+    // 1. 모든 'likes' 서브컬렉션의 문서를 삭제
+    final likesSnapshot = await productRef.collection('likes').get();
+    for (var doc in likesSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    // 2. 제품 문서 삭제
+    await productRef.delete();
+
+    // 3. 장바구니에서도 제품 삭제
+    final appState = Provider.of<AppState>(context, listen: false);
+    await appState.removeFromCart(widget.product);
+
     Navigator.pop(context);
   }
 
@@ -134,15 +155,12 @@ class _DetailPageState extends State<DetailPage> {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () async {
-                    final result = await Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => EditPage(product: widget.product),
                       ),
                     );
-                    if (result == true) {
-                      setState(() {});
-                    }
                   },
                 ),
                 IconButton(
@@ -162,9 +180,9 @@ class _DetailPageState extends State<DetailPage> {
                 AspectRatio(
                   aspectRatio: 18 / 11,
                   child: widget.product.imageUrl != null &&
-                          widget.product.imageUrl!.isNotEmpty
+                          widget.product.imageUrl.isNotEmpty
                       ? Image.network(
-                          widget.product.imageUrl!,
+                          widget.product.imageUrl,
                           fit: BoxFit.contain,
                         )
                       : Container(), // 이미지가 없을 경우 빈 컨테이너 표시
@@ -176,9 +194,19 @@ class _DetailPageState extends State<DetailPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget._product!.name,
-                          style: Theme.of(context).textTheme.titleLarge,
+                        // Text(
+                        //   widget._product!.name,
+                        //   style: Theme.of(context).textTheme.titleLarge,
+                        // ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width *
+                              0.7, // Limits width
+                          child: Text(
+                            widget._product!.name,
+                            style: Theme.of(context).textTheme.titleLarge,
+                            overflow:
+                                TextOverflow.ellipsis, // Truncates long text
+                          ),
                         ),
                         const SizedBox(height: 4.0),
                         Text(
@@ -297,6 +325,8 @@ class _EditPageState extends State<EditPage> {
       'description': _descriptionController.text,
       'imageUrl': imageUrl,
     });
+    setState(() {});
+    Navigator.pop(context, imageUrl);
   }
 
   @override
@@ -316,7 +346,7 @@ class _EditPageState extends State<EditPage> {
               onPressed: () async {
                 try {
                   await _updateProduct();
-                  Navigator.of(context).pop(true);
+                  Navigator.pop(context);
                 } catch (e) {
                   print(e);
                 }

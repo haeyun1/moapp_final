@@ -62,16 +62,15 @@ class _HomePageState extends State<HomePage> {
                 // 이미지 표시
                 AspectRatio(
                   aspectRatio: 18 / 11,
-                  child:
-                      product.imageUrl != null && product.imageUrl!.isNotEmpty
-                          ? Image.network(
-                              product.imageUrl!,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.network(
-                              'https://handong.edu/site/handong/res/img/logo.png',
-                              fit: BoxFit.cover,
-                            ),
+                  child: product.imageUrl != null && product.imageUrl.isNotEmpty
+                      ? Image.network(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          'https://handong.edu/site/handong/res/img/logo.png',
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -111,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                   return Container();
                 }
                 if (snapshot.hasData && snapshot.data == true) {
-                  return Positioned(
+                  return const Positioned(
                     top: 8.0,
                     right: 8.0,
                     child: Icon(

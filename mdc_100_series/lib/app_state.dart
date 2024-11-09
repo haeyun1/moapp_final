@@ -103,6 +103,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _initializeCartSubscription(String userId) {
+    _cart = [];
     _cartsSubscription = FirebaseFirestore.instance
         .collection('user')
         .doc(userId)
@@ -118,10 +119,11 @@ class AppState extends ChangeNotifier {
           price: data['price'] as int,
           description: data['description'] as String,
           creatorUid: data['creatorUid'] as String,
-          recentUpdateTime: data['recentUpdateTime'] as Timestamp,
-          creationTime: data['creationTime'] as Timestamp,
+          recentUpdateTime:
+              data['recentUpdateTime'] as Timestamp? ?? Timestamp.now(),
+          creationTime: data['creationTime'] as Timestamp? ?? Timestamp.now(),
           imageUrl: data['imageUrl'] as String,
-          likes: (data['likes'] ?? 0) as int,
+          likes: data['likes'] as int,
         );
       }).toList();
       notifyListeners();
@@ -129,6 +131,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _initializeProductsSubscription() {
+    _products = [];
     _productsSubscription = FirebaseFirestore.instance
         .collection('product')
         .snapshots()
@@ -141,10 +144,11 @@ class AppState extends ChangeNotifier {
           price: data['price'] as int,
           description: data['description'] as String,
           creatorUid: data['creatorUid'] as String,
-          recentUpdateTime: data['recentUpdateTime'] as Timestamp,
-          creationTime: data['creationTime'] as Timestamp,
+          recentUpdateTime:
+              data['recentUpdateTime'] as Timestamp? ?? Timestamp.now(),
+          creationTime: data['creationTime'] as Timestamp? ?? Timestamp.now(),
           imageUrl: data['imageUrl'] as String,
-          likes: (data['likes'] ?? 0) as int,
+          likes: data['likes'] as int,
         );
       }).toList();
       notifyListeners();
